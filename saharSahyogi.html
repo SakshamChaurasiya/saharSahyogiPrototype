@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicReporter - Community Issue Resolution</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .nav {
+            background: white;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 0.5rem 1rem;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #64748b;
+        }
+
+        .nav-tab.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .nav-tab:hover {
+            background: #e2e8f0;
+        }
+
+        .nav-tab.active:hover {
+            background: #2563eb;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #dbeafe;
+            color: #1e40af;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin: 0.25rem;
+        }
+
+        .badge.gold {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge.silver {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-progress {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-resolved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leaderboard-table th,
+        .leaderboard-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .leaderboard-table th {
+            background: #f8fafc;
+            font-weight: 600;
+        }
+
+        .rank {
+            font-weight: bold;
+            color: #3b82f6;
+        }
+
+        .issue-card {
+            border-left: 4px solid #3b82f6;
+            transition: transform 0.2s;
+        }
+
+        .issue-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .issue-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .vote-section {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .vote-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .vote-btn.yes {
+            border-color: #16a34a;
+            color: #16a34a;
+        }
+
+        .vote-btn.no {
+            border-color: #dc2626;
+            color: #dc2626;
+        }
+
+        .vote-btn:hover {
+            background: #f8fafc;
+        }
+
+        .progress-bar {
+            background: #f1f5f9;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #16a34a;
+            transition: width 0.3s ease;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .chart-label {
+            width: 120px;
+            font-size: 0.875rem;
+        }
+
+        .chart-bar-fill {
+            height: 30px;
+            background: #3b82f6;
+            border-radius: 4px;
+            margin: 0 1rem;
+            display: flex;
+            align-items: center;
+            color: white;
+            padding: 0 1rem;
+            font-weight: 500;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+
+        .stat-label {
+            color: #64748b;
+            margin-top: 0.5rem;
+        }
+
+        .map-placeholder {
+            background: #f1f5f9;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header-content {
+                padding: 0 1rem;
+            }
+
+            .nav {
+                padding: 1rem;
+            }
+
+            .nav-tabs {
+                justify-content: center;
+            }
+
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🏛️ CivicReporter</div>
+            <div style="color: #bfdbfe;">Community Issue Resolution Platform</div>
+        </div>
+    </header>
+
+    <nav class="nav">
+        <div class="nav-content">
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showPage('dashboard')">Dashboard</button>
+                <button class="nav-tab" onclick="showPage('report')">Report Issue</button>
+                <button class="nav-tab" onclick="showPage('feed')">Community Feed</button>
+                <button class="nav-tab" onclick="showPage('admin')">Admin Voting</button>
+                <button class="nav-tab" onclick="showPage('analytics')">Analytics</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page active">
+            <h1 style="margin-bottom: 2rem; color: #1e293b;">Your Dashboard</h1>
+            
+            <div class="grid grid-2">
+                <div class="card">
+                    <h2 style="margin-bottom: 1rem; color: #1e293b;">🏆 Your Achievements</h2>
+                    <div style="margin-bottom: 1rem;">
+                        <span class="badge gold">🥇 Citizen Reporter</span>
+                        <span class="badge silver">🎯 Problem Solver</span>
+                        <span class="badge">📍 Local Hero</span>
+                        <span class="badge">🤝 Community Helper</span>
+                    </div>
+                    <p style="color: #64748b; font-size: 0.875rem;">Keep reporting issues to unlock more badges!</p>
+                </div>
+
+                <div class="card">
+                    <h2 style="margin-bottom: 1rem; color: #1e293b;">📊 Your Stats</h2>
+                    <div class="stats-grid">
+                        <div style="text-align: center;">
+                            <div class="stat-number" style="font-size: 1.5rem;">12</div>
+                            <div class="stat-label" style="font-size: 0.75rem;">Issues Reported</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div class="stat-number" style="font-size: 1.5rem;">8</div>
+                            <div class="stat-label" style="font-size: 0.75rem;">Resolved</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div class="stat-number" style="font-size: 1.5rem;">245</div>
+                            <div class="stat-label" style="font-size: 0.75rem;">Points Earned</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="card">
+                    <h2 style="margin-bottom: 1rem; color: #1e293b;">🏅 Local Leaderboard</h2>
+                    <p style="color: #64748b; margin-bottom: 1rem; font-size: 0.875rem;">Top contributors in your 5km area</p>
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>User</th>
+                                <th>Points</th>
+                                <th>Issues</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="rank">#1</td>
+                                <td>Alex Chen</td>
+                                <td>380</td>
+                                <td>15</td>
+                            </tr>
+                            <tr style="background: #f8fafc;">
+                                <td class="rank">#2</td>
+                                <td>You</td>
+                                <td>245</td>
+                                <td>12</td>
+                            </tr>
+                            <tr>
+                                <td class="rank">#3</td>
+                                <td>Sarah Johnson</td>
+                                <td>220</td>
+                                <td>11</td>
+                            </tr>
+                            <tr>
+                                <td class="rank">#4</td>
+                                <td>Mike Rodriguez</td>
+                                <td>185</td>
+                                <td>9</td>
+                            </tr>
+                            <tr>
+                                <td class="rank">#5</td>
+                                <td>Emma Davis</td>
+                                <td>165</td>
+                                <td>8</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h2 style="margin-bottom: 1rem; color: #1e293b;">📋 Your Recent Reports</h2>
+                    <div class="issue-card" style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <h3 style="margin-bottom: 0.5rem;">Broken Street Light</h3>
+                        <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">Street light on Maple St has been out for 3 days</p>
+                        <span class="status-badge status-progress">In Progress</span>
+                    </div>
+                    <div class="issue-card" style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <h3 style="margin-bottom: 0.5rem;">Pothole on Main Street</h3>
+                        <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">Large pothole causing damage to vehicles</p>
+                        <span class="status-badge status-resolved">Resolved</span>
+                    </div>
+                    <div class="issue-card" style="padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <h3 style="margin-bottom: 0.5rem;">Graffiti on Park Wall</h3>
+                        <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">Vandalism reported at Central Park</p>
+                        <span class="status-badge status-pending">Pending</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Issue Page -->
+        <div id="report" class="page">
+            <h1 style="margin-bottom: 2rem; color: #1e293b;">Report New Issue</h1>
+            
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <form>
+                    <div class="form-group">
+                        <label class="form-label">Issue Title *</label>
+                        <input type="text" class="form-input" placeholder="Brief description of the issue" value="Broken traffic signal">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Category *</label>
+                        <select class="form-input">
+                            <option>Traffic & Roads</option>
+                            <option>Public Safety</option>
+                            <option>Parks & Recreation</option>
+                            <option>Utilities</option>
+                            <option>Sanitation</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description *</label>
+                        <textarea class="form-input textarea" placeholder="Provide detailed information about the issue...">The traffic signal at the intersection of Oak Avenue and 5th Street has been malfunctioning since yesterday morning. The light stays red in all directions, causing traffic delays and safety concerns.</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-input" placeholder="Street address or nearby landmark" value="Oak Avenue & 5th Street">
+                        <div class="map-placeholder" style="margin-top: 1rem;">
+                            📍 Interactive map will show here<br>
+                            <small>Click to pin exact location</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Upload Photos/Videos</label>
+                        <button type="button" class="btn btn-secondary" style="width: 100%;">
+                            📷 Choose Files (Max 5 files, 10MB each)
+                        </button>
+                        <p style="color: #64748b; font-size: 0.75rem; margin-top: 0.5rem;">Selected: traffic_signal_broken.jpg</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Priority Level</label>
+                        <select class="form-input">
+                            <option>High - Safety hazard</option>
+                            <option>Medium - Inconvenience</option>
+                            <option>Low - Minor issue</option>
+                        </select>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="alert('Issue reported successfully! Your report ID is #2024-0156')">
+                        Submit Report
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Community Feed Page -->
+        <div id="feed" class="page">
+            <h1 style="margin-bottom: 2rem; color: #1e293b;">Community Issues Feed</h1>
+            
+            <div class="card" style="margin-bottom: 2rem;">
+                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                    <button class="btn btn-secondary">All Issues</button>
+                    <button class="btn btn-secondary">Traffic</button>
+                    <button class="btn btn-secondary">Safety</button>
+                    <button class="btn btn-secondary">Parks</button>
+                    <button class="btn btn-secondary">Utilities</button>
+                    <div style="margin-left: auto;">
+                        <select class="form-input" style="width: auto; display: inline-block;">
+                            <option>Sort by Recent</option>
+                            <option>Sort by Priority</option>
+                            <option>Sort by Votes</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="issue-card card">
+                    <h3 style="margin-bottom: 0.5rem; color: #1e293b;">Street Light Outage - Downtown</h3>
+                    <p style="color: #64748b; margin-bottom: 1rem;">Multiple street lights are out on Main Street between 2nd and 4th Ave, creating safety concerns for pedestrians at night.</p>
+                    <div class="issue-meta">
+                        <span>📍 Downtown District</span>
+                        <span>⏰ 2 hours ago</span>
+                        <span class="status-badge status-pending">Pending</span>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="vote-btn">👍 Upvote (12)</button>
+                        <button class="vote-btn">💬 Comments (5)</button>
+                        <button class="vote-btn">📍 Navigate</button>
+                    </div>
+                </div>
+
+                <div class="issue-card card">
+                    <h3 style="margin-bottom: 0.5rem; color: #1e293b;">Playground Equipment Damaged</h3>
+                    <p style="color: #64748b; margin-bottom: 1rem;">Swing set at Riverside Park has broken chains. Posted signs warn of danger but equipment needs repair.</p>
+                    <div class="issue-meta">
+                        <span>📍 Riverside Park</span>
+                        <span>⏰ 5 hours ago</span>
+                        <span class="status-badge status-progress">In Progress</span>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="vote-btn">👍 Upvote (8)</button>
+                        <button class="vote-btn">💬 Comments (3)</button>
+                        <button class="vote-btn">📍 Navigate</button>
+                    </div>
+                </div>
+
+                <div class="issue-card card">
+                    <h3 style="margin-bottom: 0.5rem; color: #1e293b;">Water Main Leak</h3>
+                    <p style="color: #64748b; margin-bottom: 1rem;">Water leak detected on Elm Street causing road flooding and potential sinkholes. Traffic is being diverted.</p>
+                    <div class="issue-meta">
+                        <span>📍 Elm Street</span>
+                        <span>⏰ 1 day ago</span>
+                        <span class="status-badge status-progress">In Progress</span>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="vote-btn">👍 Upvote (24)</button>
+                        <button class="vote-btn">💬 Comments (12)</button>
+                        <button class="vote-btn">📍 Navigate</button>
+                    </div>
+                </div>
+
+                <div class="issue-card card">
+                    <h3 style="margin-bottom: 0.5rem; color: #1e293b;">Illegal Dumping Site</h3>
+                    <p style="color: #64748b; margin-bottom: 1rem;">Large pile of construction debris dumped behind the shopping center on Cedar Avenue.</p>
+                    <div class="issue-meta">
+                        <span>📍 Cedar Avenue</span>
+                        <span>⏰ 2 days ago</span>
+                        <span class="status-badge status-resolved">Resolved</span>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="vote-btn">👍 Upvote (15)</button>
+                        <button class="vote-btn">💬 Comments (7)</button>
+                        <button class="vote-btn">📍 Navigate</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Voting Page -->
+        <div id="admin" class="page">
+            <h1 style="margin-bottom: 2rem; color: #1e293b;">Admin Resolution Voting</h1>
+            
+            <div class="card">
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 1rem; margin-bottom: 2rem;">
+                    <h3 style="color: #166534; margin-bottom: 0.5rem;">✅ Recently Resolved by Admin</h3>
+                    <p style="color: #166534; font-size: 0.875rem;">Issue #2024-0142 - "Broken Streetlight on Oak Ave" has been marked as resolved by City Admin.</p>
+                </div>
+
+                <h2 style="margin-bottom: 1rem; color: #1e293b;">Community Verification Vote</h2>
+                <p style="color: #64748b; margin-bottom: 2rem;">Help verify if this issue has actually been resolved. Your vote helps ensure quality control.</p>
+
+                <div class="issue-card" style="border: 2px solid #3b82f6; margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                        <h3 style="color: #1e293b;">Broken Streetlight on Oak Avenue</h3>
+                        <span class="status-badge" style="background: #dcfce7; color: #166534;">Admin Resolved</span>
+                    </div>
+                    <p style="color: #64748b; margin-bottom: 1rem;">Street light has been out for over a week, creating safety hazards for pedestrians and drivers during night hours.</p>
+                    <div class="issue-meta">
+                        <span>📍 Oak Avenue & 3rd Street</span>
+                        <span>⏰ Reported: 1 week ago</span>
+                        <span>👤 Reported by: Sarah M.</span>
+                        <span>🔧 Resolved: 2 hours ago</span>
+                    </div>
+                </div>
+
+                <div class="card" style="background: #f8fafc; border: 2px solid #e2e8f0;">
+                    <h3 style="margin-bottom: 1rem; color: #1e293b;">Verify Resolution</h3>
+                    <p style="margin-bottom: 1.5rem; color: #64748b;">Has this streetlight issue actually been fixed? Vote based on your knowledge or if you've visited the location.</p>
+                    
+                    <div class="vote-section">
+                        <button class="vote-btn yes" style="background: #dcfce7; border-color: #16a34a;">
+                            ✅ Yes, it's fixed (Vote confirms resolution)
+                        </button>
+                        <button class="vote-btn no" style="background: #fef2f2; border-color: #dc2626;">
+                            ❌ No, still broken (Dispute resolution)
+                        </button>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h4 style="margin-bottom: 1rem; color: #1e293b;">Current Voting Results</h4>
+                        <div style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Verified Fixed</span>
+                                <span style="font-weight: 600;">18 votes (72%)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 72%;"></div>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Still Broken</span>
+                                <span style="font-weight: 600;">7 votes (28%)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 28%; background: #dc2626;"></div>
+                            </div>
+                        </div>
+                        <div style="background: #dcfce7; border: 1px solid #16a34a; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                            <p style="color: #166534; margin: 0; font-weight: 500;">
+                                ✅ Resolution Confirmed: 72% community verification (threshold: 70%)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-2" style="margin-top: 2rem;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 1rem; color: #1e293b;">Pending Admin Actions</h3>
+                        <div style="padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 1rem;">
+                            <h4 style="margin-bottom: 0.5rem;">Pothole Repair - Main St</h4>
+                            <p style="color: #64748b; font-size: 0.875rem;">Waiting for city crew assignment</p>
+                            <span class="status-badge status-pending">Pending</span>
+                        </div>
+                        <div style="padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px;">
+                            <h4 style="margin-bottom: 0.5rem;">Graffiti Cleanup - Park Wall</h4>
+                            <p style="color: #64748b; font-size: 0.875rem;">Scheduled for maintenance crew</p>
+                            <span class="status-badge status-progress">In Progress</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="margin-bottom: 1rem; color: #1e293b;">Vote History</h3>
+                        <div style="font-size: 0.875rem; color: #64748b;">
+                            <p style="margin-bottom: 0.5rem;">✅ Traffic Signal Repair - Verified</p>
+                            <p style="margin-bottom: 0.5rem;">✅ Park Bench Replacement - Verified</p>
+                            <p style="margin-bottom: 0.5rem;">❌ Sidewalk Crack - Disputed</p>
+                            <p style="margin-bottom: 0.5rem;">✅ Stop Sign Installation - Verified</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Page -->
+        <div id="analytics" class="page">
+            <h1 style="margin-bottom: 2rem; color: #1e293b;">Analytics Dashboard</h1>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">1,247</div>
+                    <div class="stat-label">Total Issues Reported</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">892</div>
+                    <div class="stat-label">Issues Resolved</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">4.2</div>
+                    <div class="stat-label">Avg Resolution (Days)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">71.5%</div>
+                    <div class="stat-label">Resolution Rate</div>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="chart-container">
+                    <h2 style="margin-bottom: 1.5rem; color: #1e293b;">Issues by Category</h2>
+                    <div class="chart-bar">
+                        <div class="chart-label">Traffic & Roads</div>
+                        <div class="chart-bar-fill" style="width: 280px;">285</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Public Safety</div>
+                        <div class="chart-bar-fill" style="width: 220px;">198</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Utilities</div>
+                        <div class="chart-bar-fill" style="width: 180px;">156</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Parks & Rec</div>
+                        <div class="chart-bar-fill" style="width: 140px;">124</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Sanitation</div>
+                        <div class="chart-bar-fill" style="width: 100px;">89</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h2 style="margin-bottom: 1.5rem; color: #1e293b;">Monthly Trend</h2>
+                    <div style="display: flex; align-items: end; height: 200px; gap: 1rem;">
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div style="width: 40px; height: 120px; background: #3b82f6; border-radius: 4px 4px 0 0;"></div>
+                            <div style="font-size: 0.75rem; margin-top: 0.5rem;">Jan</div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div style="width: 40px; height: 150px; background: #3b82f6; border-radius: 4px 4px 0 0;"></div>
+                            <div style="font-size: 0.75rem; margin-top: 0.5rem;">Feb</div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div style="width: 40px; height: 180px; background: #3b82f6; border-radius: 4px 4px 0 0;"></div>
+                            <div style="font-size: 0.75rem; margin-top: 0.5rem;">Mar</div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div style="width: 40px; height: 140px; background: #3b82f6; border-radius: 4px 4px 0 0;"></div>
+                            <div style="font-size: 0.75rem; margin-top: 0.5rem;">Apr</div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div style="width: 40px; height: 160px; background: #3b82f6; border-radius: 4px 4px 0 0;"></div>
+                            <div style="font-size: 0.75rem; margin-top: 0.5rem;">May</div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div style="width: 40px; height: 190px; background: #3b82f6; border-radius: 4px 4px 0 0;"></div>
+                            <div style="font-size: 0.75rem; margin-top: 0.5rem;">Jun</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="chart-container">
+                    <h2 style="margin-bottom: 1.5rem; color: #1e293b;">Resolution Status</h2>
+                    <div style="display: flex; align-items: center; justify-content: center; height: 200px;">
+                        <div style="position: relative; width: 150px; height: 150px;">
+                            <!-- Simple pie chart representation -->
+                            <div style="position: absolute; width: 150px; height: 150px; border-radius: 50%; background: conic-gradient(#16a34a 0deg 257deg, #3b82f6 257deg 329deg, #f59e0b 329deg 360deg);"></div>
+                            <div style="position: absolute; width: 80px; height: 80px; background: white; border-radius: 50%; top: 35px; left: 35px; display: flex; align-items: center; justify-content: center; font-weight: bold;">71.5%</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                            <div style="width: 16px; height: 16px; background: #16a34a; border-radius: 2px; margin-right: 0.5rem;"></div>
+                            <span style="font-size: 0.875rem;">Resolved (892)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                            <div style="width: 16px; height: 16px; background: #3b82f6; border-radius: 2px; margin-right: 0.5rem;"></div>
+                            <span style="font-size: 0.875rem;">In Progress (267)</span>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 16px; height: 16px; background: #f59e0b; border-radius: 2px; margin-right: 0.5rem;"></div>
+                            <span style="font-size: 0.875rem;">Pending (88)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h2 style="margin-bottom: 1.5rem; color: #1e293b;">Response Time Distribution</h2>
+                    <div class="chart-bar">
+                        <div class="chart-label">Same Day</div>
+                        <div class="chart-bar-fill" style="width: 120px; background: #16a34a;">15%</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">1-3 Days</div>
+                        <div class="chart-bar-fill" style="width: 180px; background: #3b82f6;">45%</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">4-7 Days</div>
+                        <div class="chart-bar-fill" style="width: 100px; background: #f59e0b;">25%</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">1+ Weeks</div>
+                        <div class="chart-bar-fill" style="width: 60px; background: #ef4444;">15%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 style="margin-bottom: 1.5rem; color: #1e293b;">Recent Activity</h2>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    <div style="padding: 1rem; border-left: 4px solid #16a34a; background: #f0fdf4; margin-bottom: 1rem; border-radius: 0 8px 8px 0;">
+                        <div style="display: flex; justify-content: between; align-items: start;">
+                            <div>
+                                <h4 style="color: #166534; margin-bottom: 0.25rem;">Issue Resolved</h4>
+                                <p style="color: #166534; font-size: 0.875rem; margin: 0;">Streetlight repair on Oak Avenue completed</p>
+                            </div>
+                            <span style="color: #166534; font-size: 0.75rem;">2 hours ago</span>
+                        </div>
+                    </div>
+                    <div style="padding: 1rem; border-left: 4px solid #3b82f6; background: #eff6ff; margin-bottom: 1rem; border-radius: 0 8px 8px 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h4 style="color: #1e40af; margin-bottom: 0.25rem;">New Issue Reported</h4>
+                                <p style="color: #1e40af; font-size: 0.875rem; margin: 0;">Pothole on Elm Street needs attention</p>
+                            </div>
+                            <span style="color: #1e40af; font-size: 0.75rem;">4 hours ago</span>
+                        </div>
+                    </div>
+                    <div style="padding: 1rem; border-left: 4px solid #f59e0b; background: #fffbeb; margin-bottom: 1rem; border-radius: 0 8px 8px 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h4 style="color: #d97706; margin-bottom: 0.25rem;">Issue Escalated</h4>
+                                <p style="color: #d97706; font-size: 0.875rem; margin: 0;">Water main leak requires emergency response</p>
+                            </div>
+                            <span style="color: #d97706; font-size: 0.75rem;">1 day ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update active tab
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // Add some interactive behavior
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers for vote buttons
+            const voteButtons = document.querySelectorAll('.vote-btn');
+            voteButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    if (this.textContent.includes('Upvote')) {
+                        const currentVotes = parseInt(this.textContent.match(/\d+/)[0]);
+                        this.textContent = this.textContent.replace(/\(\d+\)/, `(${currentVotes + 1})`);
+                        this.style.background = '#dbeafe';
+                    }
+                });
+            });
+
+            // Add form validation
+            const submitBtn = document.querySelector('button[onclick*="alert"]');
+            if (submitBtn) {
+                submitBtn.addEventListener('click', function(e) {
+                    const title = document.querySelector('input[placeholder*="Brief description"]').value;
+                    const description = document.querySelector('textarea').value;
+                    
+                    if (!title.trim() || !description.trim()) {
+                        alert('Please fill in all required fields');
+                        return;
+                    }
+                    
+                    // Simulate success
+                    this.textContent = 'Submitted Successfully!';
+                    this.style.background = '#16a34a';
+                    setTimeout(() => {
+                        this.textContent = 'Submit Report';
+                        this.style.background = '#3b82f6';
+                    }, 2000);
+                });
+            }
+
+            // Add hover effects to issue cards
+            const issueCards = document.querySelectorAll('.issue-card');
+            issueCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.borderLeftColor = '#1e40af';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.borderLeftColor = '#3b82f6';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
